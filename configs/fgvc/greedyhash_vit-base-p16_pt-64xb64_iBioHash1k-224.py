@@ -4,6 +4,7 @@ _base_ = [
     '../_base_/default_runtime.py'
 ]
 
+
 model = dict(
     type='ImageClassifier',
     backbone=dict(
@@ -12,7 +13,7 @@ model = dict(
         img_size=224,
         patch_size=16,
         drop_rate=0.1,
-        frozen_stages=12,
+        frozen_stages=-1,
         init_cfg=dict(
             type='Pretrained',
             checkpoint="https://download.openmmlab.com/mmclassification/v0/vit/pretrain/vit-base-p16_3rdparty_pt-64xb64_in1k-224_20210928-02284250.pth",
@@ -32,24 +33,41 @@ model = dict(
 
 #dataset settings
 train_dataloader = dict(
-    batch_size=64,
+    batch_size=32,
     num_workers=4,
 )
 gpus = 2
 
+layer_decay = 0.8
+lr = 1e-4
 # schedule settings
 optim_wrapper = dict(
-    optimizer=dict(type='AdamW', lr=5e-4, weight_decay=0.3),
+    optimizer=dict(type='AdamW', lr=lr, weight_decay=0.3),
     clip_grad=dict(max_norm=1.0),
     # specific to vit pretrain
     paramwise_cfg=dict(custom_keys={
-        '.cls_token': dict(decay_mult=0.0),
-        '.pos_embed': dict(decay_mult=0.0)
+        '.cls_token': dict(decay_mult=0.0, lr_mult=pow(layer_decay, 13)),
+        '.pos_embed': dict(decay_mult=0.0, lr_mult=pow(layer_decay, 13)),
+
+        'backbone.patch_embed': dict(lr_mult=pow(layer_decay, 13)),
+        'backbone.layer0': dict(lr_mult=pow(layer_decay, 12)),
+        'backbone.layer1': dict(lr_mult=pow(layer_decay, 11)),
+        'backbone.layer2': dict(lr_mult=pow(layer_decay, 10)),
+        'backbone.layer3': dict(lr_mult=pow(layer_decay, 9)),
+        'backbone.layer4': dict(lr_mult=pow(layer_decay, 8)),
+        'backbone.layer5': dict(lr_mult=pow(layer_decay, 7)),
+        'backbone.layer6': dict(lr_mult=pow(layer_decay, 6)),
+        'backbone.layer7': dict(lr_mult=pow(layer_decay, 5)),
+        'backbone.layer8': dict(lr_mult=pow(layer_decay, 4)),
+        'backbone.layer9': dict(lr_mult=pow(layer_decay, 3)),
+        'backbone.layer10': dict(lr_mult=pow(layer_decay, 2)),
+        'backbone.layer11': dict(lr_mult=pow(layer_decay, 1)),
+        
     }),
 )
 
 # learning policy
-warmup_epochs = 5  # about 10000 iterations for ImageNet-1k
+warmup_epochs = 15  # about 10000 iterations for ImageNet-1k
 param_scheduler = [
     # warm up learning rate scheduler
     dict(

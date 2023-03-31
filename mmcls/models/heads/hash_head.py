@@ -126,6 +126,7 @@ class GreedyHashHead(ClsHead):
         # x = self.layers.fc_layer(x)
 
         hash_feature = self.layers.hash_layer(x)
+        hash_feature = hash_feature.tanh()
         hash_code = Hash.apply(hash_feature)
 
         gt_pred = self.layers.hash2class(hash_code)
