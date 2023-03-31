@@ -23,7 +23,7 @@ mmcls 1.x
 
 mmengine
 
-mmcv
+mmcv 1.x
 
 # start
 1. 先用这个脚本设置训练集文件夹结构
@@ -63,3 +63,12 @@ for _, row in tqdm(train_data.iterrows(), total=train_data.shape[0], desc="移�
 ```shell
 bash tools/train.sh
 ```
+
+# 实验记录
+
+- **2023-4-1 1:43:00 log->mmclassification/results/test/20230331_123649** - 实现了Greedyhash算法，但是不能收敛。在消融后（去除greedyhash loss保留分类loss）发现是hash_layer的问题，生成hash_code后无法简单地完成分类。在hash_feature做了tanh()变换，然后再做sign()，变得好训了很多。acc从10%上涨到了50%。
+
+  现在的问题是，训练20epoch后止步在了50%左右，无法继续提升。可能是触及到了hash_code的分类性能上限。
+
+  目前计划：1. 调整超参，加入greedyhash loss，训练greedy hash最终版30epoch。
+

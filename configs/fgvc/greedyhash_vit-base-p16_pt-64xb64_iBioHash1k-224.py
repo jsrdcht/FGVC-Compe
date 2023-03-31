@@ -67,7 +67,7 @@ optim_wrapper = dict(
 )
 
 # learning policy
-warmup_epochs = 15  # about 10000 iterations for ImageNet-1k
+warmup_epochs = 3  # about 10000 iterations for ImageNet-1k
 param_scheduler = [
     # warm up learning rate scheduler
     dict(
@@ -86,7 +86,7 @@ param_scheduler = [
 ]
 
 # train, val, test setting
-train_cfg = dict(by_epoch=True, max_epochs=200)
+train_cfg = dict(by_epoch=True, max_epochs=30)
 val_cfg = None
 test_cfg = None
 
@@ -108,7 +108,7 @@ default_hooks = dict(
     param_scheduler=dict(type='ParamSchedulerHook'),
 
     # save checkpoint per epoch.
-    checkpoint=dict(type='CheckpointHook', interval=20),
+    checkpoint=dict(type='CheckpointHook', interval=10),
 
     # set sampler seed in distributed evrionment.
     sampler_seed=dict(type='DistSamplerSeedHook'),

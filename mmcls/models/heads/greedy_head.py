@@ -155,24 +155,17 @@ class GreedyHashHead(ClsHead):
 
         cls_score = self(feats)
 
-        # x = self.pre_logits(feats)
-        # hash_feature = self.layers.hash_layer(x)
-
-        # if 'score' in data_samples[0].gt_label:
-        #     # Batch augmentation may convert labels to one-hot format scores.
-        #     target = torch.stack([i.gt_label.score for i in data_samples])
-        # else:
-        #     target = torch.cat([i.gt_label.label for i in data_samples])
-        # print('feature_shape', hash_feature.shape)
-        # print('Tracing the loss function',target)
+        x = self.pre_logits(feats)
+        hash_feature = self.layers.hash_layer(x)
+        hash_feature = hash_feature.tanh()
 
         # The part can not be traced by torch.fx
         losses = self._get_loss(cls_score, data_samples, **kwargs)
-        # # losses is a dict
-        # losses['cls_loss'] = losses['loss']
+        # losses is a dict
+        losses['cls_loss'] = losses['loss']
 
-        # greedy_loss = (hash_feature.abs() - 1).pow(3).abs().mean()
-        # losses['greedy_loss'] = greedy_loss
+        greedy_loss = (hash_feature.abs() - 1).pow(3).abs().mean()
+        losses['greedy_loss'] = greedy_loss
 
-        # losses['loss'] = losses['cls_loss'] + self.alpha * losses['greedy_loss']
+        losses['loss'] = losses['cls_loss'] + self.alpha * losses['greedy_loss']
         return losses

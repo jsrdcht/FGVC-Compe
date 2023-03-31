@@ -40,37 +40,37 @@ optim_wrapper = dict(
         custom_keys=dict(
             {
                 '.cls_token': dict(
-                    decay_mult=0.0, lr_mult=5.497558138880004e-06),
+                    decay_mult=0.0, lr_mult=0.054975581388800036),
                 '.pos_embed': dict(
-                    decay_mult=0.0, lr_mult=5.497558138880004e-06),
-                'backbone.patch_embed': dict(lr_mult=5.497558138880004e-06),
-                'backbone.layer0': dict(lr_mult=6.871947673600004e-06),
-                'backbone.layer1': dict(lr_mult=8.589934592000006e-06),
-                'backbone.layer2': dict(lr_mult=1.0737418240000007e-05),
-                'backbone.layer3': dict(lr_mult=1.3421772800000007e-05),
-                'backbone.layer4': dict(lr_mult=1.677721600000001e-05),
-                'backbone.layer5': dict(lr_mult=2.097152000000001e-05),
-                'backbone.layer6': dict(lr_mult=2.621440000000001e-05),
-                'backbone.layer7': dict(lr_mult=3.276800000000001e-05),
-                'backbone.layer8': dict(lr_mult=4.096000000000001e-05),
-                'backbone.layer9': dict(lr_mult=5.120000000000001e-05),
-                'backbone.layer10': dict(lr_mult=6.400000000000001e-05),
-                'backbone.layer11': dict(lr_mult=8e-05)
+                    decay_mult=0.0, lr_mult=0.054975581388800036),
+                'backbone.patch_embed': dict(lr_mult=0.054975581388800036),
+                'backbone.layer0': dict(lr_mult=0.06871947673600004),
+                'backbone.layer1': dict(lr_mult=0.08589934592000005),
+                'backbone.layer2': dict(lr_mult=0.10737418240000006),
+                'backbone.layer3': dict(lr_mult=0.13421772800000006),
+                'backbone.layer4': dict(lr_mult=0.1677721600000001),
+                'backbone.layer5': dict(lr_mult=0.20971520000000007),
+                'backbone.layer6': dict(lr_mult=0.2621440000000001),
+                'backbone.layer7': dict(lr_mult=0.3276800000000001),
+                'backbone.layer8': dict(lr_mult=0.4096000000000001),
+                'backbone.layer9': dict(lr_mult=0.5120000000000001),
+                'backbone.layer10': dict(lr_mult=0.6400000000000001),
+                'backbone.layer11': dict(lr_mult=0.8)
             })),
     clip_grad=dict(max_norm=1.0),
     type='AmpOptimWrapper',
     loss_scale='dynamic')
-warmup_epochs = 15
+warmup_epochs = 3
 param_scheduler = [
     dict(
         type='LinearLR',
         start_factor=0.001,
         by_epoch=True,
-        end=15,
+        end=3,
         convert_to_iter_based=True),
-    dict(type='CosineAnnealingLR', eta_min=1e-05, by_epoch=True, begin=15)
+    dict(type='CosineAnnealingLR', eta_min=1e-05, by_epoch=True, begin=3)
 ]
-train_cfg = dict(by_epoch=True, max_epochs=200, val_interval=1)
+train_cfg = dict(by_epoch=True, max_epochs=30, val_interval=1)
 val_cfg = None
 test_cfg = None
 auto_scale_lr = dict(base_batch_size=64)
@@ -79,7 +79,7 @@ default_hooks = dict(
     timer=dict(type='IterTimerHook'),
     logger=dict(type='LoggerHook', interval=200),
     param_scheduler=dict(type='ParamSchedulerHook'),
-    checkpoint=dict(type='CheckpointHook', interval=20),
+    checkpoint=dict(type='CheckpointHook', interval=10),
     sampler_seed=dict(type='DistSamplerSeedHook'),
     visualization=dict(type='VisualizationHook', enable=False))
 env_cfg = dict(
@@ -120,5 +120,5 @@ gpus = 2
 layer_decay = 0.8
 lr = 0.0001
 launcher = 'pytorch'
-work_dir = './results/test'
+work_dir = './results/greedyhash'
 seed = '42+deterministic'
