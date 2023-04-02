@@ -130,6 +130,9 @@ class ClsDataSample(BaseDataElement):
             score: tensor([0.1, 0.1, 0.6, 0.1, 0.1])
         ) at 0x7fd7d1b41970>
     """
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._hash_code = None
 
     def set_gt_label(
         self, value: Union[np.ndarray, torch.Tensor, Sequence[Number], Number]
@@ -180,6 +183,11 @@ class ClsDataSample(BaseDataElement):
                 field_type='metainfo')
         self.pred_label = label_data
         return self
+    
+    def set_hash_code(self, value: torch.Tensor) -> 'ClsDataSample':
+        """Set hash_code."""
+        self._hash_code = value
+        return self
 
     @property
     def gt_label(self):
@@ -196,6 +204,10 @@ class ClsDataSample(BaseDataElement):
     @property
     def pred_label(self):
         return self._pred_label
+    
+    @property
+    def hash_code(self):
+        return self._hash_code
 
     @pred_label.setter
     def pred_label(self, value: LabelData):
@@ -224,6 +236,10 @@ def _rebuild_cls_datasample(attr_dict, convert_keys):
         attr_dict[k] = attr_dict[k].to_tensor()
     data_sample.__dict__ = attr_dict
     return data_sample
+
+
+
+
 
 
 # Due to the multi-processing strategy of PyTorch, ClsDataSample may consume

@@ -1,6 +1,6 @@
 import math
 from collections import OrderedDict
-from typing import List, Optional, Tuple
+from typing import List, Optional, Tuple, Union
 
 import torch
 import torch.nn as nn
@@ -112,7 +112,10 @@ class GreedyHashHead(ClsHead):
         exists.
         """
 
-        _, cls_token = feats[-1]
+        if len(feats) == 1:# when avg token mode 
+            cls_token = feats[0]
+        else:
+            _, cls_token = feats[-1]
         if self.hidden_dim is None:
             return cls_token
         else:
@@ -165,7 +168,53 @@ class GreedyHashHead(ClsHead):
         losses['cls_loss'] = losses['loss']
 
         greedy_loss = (hash_feature.abs() - 1).pow(3).abs().mean()
-        losses['greedy_loss'] = greedy_loss
+        losses['greedy_loss'] = self.alpha * greedy_loss
 
-        losses['loss'] = losses['cls_loss'] + self.alpha * losses['greedy_loss']
+        
+        del losses['loss']
+
         return losses
+    
+    def predict(
+        self,
+        feats: Tuple[torch.Tensor],
+        data_samples: List[Union[ClsDataSample, None]] = None
+    ) -> List[ClsDataSample]:
+        """Inference without augmentation.
+
+        Args:
+            feats (tuple[Tensor]): The features extracted from the backbone.
+                Multiple stage inputs are acceptable but only the last stage
+                will be used to classify. The shape of every item should be
+                ``(num_samples, num_classes)``.
+            data_samples (List[ClsDataSample | None], optional): The annotation
+                data of every samples. If not None, set ``pred_label`` of
+                the input data samples. Defaults to None.
+
+        Returns:
+            List[ClsDataSample]: A list of data samples which contains the
+            predicted results.
+        """
+        x = self.pre_logits(feats)
+        hash_feature = self.layers.hash_layer(x)
+        hash_code = torch.sign(hash_feature)
+        #hash_code 默认为 0或1，但是有可能出现-1，所以需要将-1转换为0
+        hash_code = torch.clamp(hash_code, min=0)
+
+        out_data_samples = []
+        if data_samples is None:
+            data_samples = [None for _ in range(hash_code.size(0))]
+
+        for data_sample, hash_code in zip(data_samples, hash_code):
+            if data_sample is None:
+                data_sample = ClsDataSample()
+
+            # 把hash_code暂时存储在property中，以后如果实现了HashDataSample，就可以把hash_code存储在pred_hash中
+            # 将hashcode从torch.Tensor转换为字符串
+            hash_code_np = hash_code.cpu().numpy()
+            hash_code_str = ''.join(map(str, hash_code_np.astype(int)))
+            data_sample.set_hash_code(hash_code_str)
+            out_data_samples.append(data_sample)
+
+        predictions = out_data_samples
+        return predictions

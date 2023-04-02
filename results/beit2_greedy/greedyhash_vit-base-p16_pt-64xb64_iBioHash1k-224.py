@@ -96,16 +96,20 @@ randomness = dict(seed=None, deterministic=False)
 model = dict(
     type='ImageClassifier',
     backbone=dict(
-        type='VisionTransformer',
-        arch='b',
+        type='BEiT',
+        arch='base',
         img_size=224,
         patch_size=16,
-        drop_rate=0.1,
-        frozen_stages=-1,
+        drop_path_rate=0.1,
+        avg_token=True,
+        output_cls_token=False,
+        use_abs_pos_emb=False,
+        use_rel_pos_bias=True,
+        use_shared_rel_pos_bias=False,
         init_cfg=dict(
             type='Pretrained',
             checkpoint=
-            'https://download.openmmlab.com/mmclassification/v0/vit/pretrain/vit-base-p16_3rdparty_pt-64xb64_in1k-224_20210928-02284250.pth',
+            'https://download.openmmlab.com/mmclassification/v0/beit/beitv2-base_3rdparty_in1k_20221114-73e11905.pth',
             prefix='backbone')),
     neck=None,
     head=dict(
@@ -120,5 +124,5 @@ gpus = 2
 layer_decay = 0.8
 lr = 0.0001
 launcher = 'pytorch'
-work_dir = './results/test'
+work_dir = './results/beit2_greedy'
 seed = '42+deterministic'
